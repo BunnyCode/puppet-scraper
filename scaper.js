@@ -1,44 +1,34 @@
 const puppeteer = require("puppeteer");
 
-async function scrape(url) {
-  // Launch the browser and open a new blank page
-  const browser = await puppeteer.launch();
+async function searchGoogle(query) {
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 
-  // Navigate the page to a URL
-  await page.goto(url);
+  await page.goto(searchUrl);
+  await page.waitForSelector('#search');
 
-  // Set screen size
-  await page.setViewport({ width: 1080, height: 1024 });
-
-  // wait for '.quotes' only == first data init finsihed
-  await page.waitForSelector(".quotes");
-
-  // scroll to the bottom of the page
-  await page.evaluate(() => {
-    window.scrollBy(0, window.innerHeight);
+  // Extract the URL of the first search result.
+  const firstResultUrl = await page.evaluate(() => {
+      const firstResult = document.querySelector('.tF2Cxc a');
+      return firstResult ? firstResult.href : null;
   });
 
-  // wait for '#loading' has display: none
-  await page.waitForSelector("#loading", { hidden: true });
+  if (firstResultUrl) {
+      console.log(`Navigating to first result: ${firstResultUrl}`);
+      await page.goto(firstResultUrl, { waitUntil: 'networkidle0' });
 
-  // wait for '.quotes'
-  // and collect new quotes (.text, .author, .tags)
-  const quotes = await page.evaluate(() => {
-    const quotes = [];
-    document.querySelectorAll(".quote").forEach((quote) => {
-      quotes.push({
-        text: quote.querySelector(".text").textContent,
-        author: quote.querySelector(".author").textContent,
-        tags: quote.querySelector(".tags").textContent,
+      const content = await page.evaluate(() => {
+          const paragraph = document.querySelector('*');
+          return paragraph ? paragraph.innerText : 'No content found';
       });
-    });
-    return quotes;
-  });
 
-  // Print out the quotes
-  console.log(quotes);
+      console.log(`Content from the site: ${content}`);
+  } else {
+      console.log("Failed to find the first result's URL.");
+  }
+
   await browser.close();
 }
 
-module.exports = scrape;
+module.exports = searchGoogle;

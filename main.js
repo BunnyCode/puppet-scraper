@@ -1,3 +1,3 @@
-const scrape = require("./scaper");
+const searchGoogle = require("./scaper");
 
-scrape("https://quotes.toscrape.com/scroll");
+searchGoogle("puppeteer");
