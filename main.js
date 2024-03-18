@@ -1,3 +1,3 @@
 const searchGoogle = require("./scaper");
 
-searchGoogle("puppeteer");
+searchGoogle("Alexei Navalny's death in Arctic prison");

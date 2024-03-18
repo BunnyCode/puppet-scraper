@@ -1,6 +1,9 @@
+require('dotenv').config();
 const puppeteer = require("puppeteer");
+const sdk = require('api')('@diffbot-2/v1.1#9i9y4qmlr6p26mz');
 
 async function searchGoogle(query) {
+  const diffbotApiKey = process.env.DIFFBOT_API_KEY
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
   const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
@@ -16,14 +19,15 @@ async function searchGoogle(query) {
 
   if (firstResultUrl) {
       console.log(`Navigating to first result: ${firstResultUrl}`);
-      await page.goto(firstResultUrl, { waitUntil: 'networkidle0' });
 
-      const content = await page.evaluate(() => {
-          const paragraph = document.querySelector('*');
-          return paragraph ? paragraph.innerText : 'No content found';
-      });
+      sdk.auth(diffbotApiKey);
+      sdk.article({
+        url: firstResultUrl
+      })
+        .then(({ data }) => console.log(data))
+        .catch(err => console.error(err));
 
-      console.log(`Content from the site: ${content}`);
+      // console.log(`Content from the site: ${content}`);
   } else {
       console.log("Failed to find the first result's URL.");
   }
