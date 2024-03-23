@@ -1,3 +1,3 @@
 const scrape = require("./scaper");
 
-scrape("https://quotes.toscrape.com/scroll");
+scrape("alexei navalny died in prison");

@@ -1,44 +1,43 @@
+require("dotenv").config();
 const puppeteer = require("puppeteer");
+const sdk = require("api")("@diffbot-2/v1.1#9i9y4qmlr6p26mz");
 
-async function scrape(url) {
-  // Launch the browser and open a new blank page
-  const browser = await puppeteer.launch();
+async function searchGoogle(query) {
+  const diffbotApiKey = process.env.DIFFBOT_API_KEY;
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+    query
+  )}`;
 
-  // Navigate the page to a URL
-  await page.goto(url);
+  await page.goto(searchUrl);
+  await page.waitForSelector("#search");
 
-  // Set screen size
-  await page.setViewport({ width: 1080, height: 1024 });
-
-  // wait for '.quotes' only == first data init finsihed
-  await page.waitForSelector(".quotes");
-
-  // scroll to the bottom of the page
-  await page.evaluate(() => {
-    window.scrollBy(0, window.innerHeight);
+  // Extract the URL of the first search result.
+  const firstResultUrl = await page.evaluate(() => {
+    const firstResult = document.querySelector(".tF2Cxc a");
+    return firstResult ? firstResult.href : null;
   });
 
-  // wait for '#loading' has display: none
-  await page.waitForSelector("#loading", { hidden: true });
+  if (firstResultUrl && diffbotApiKey) {
+    console.log(`Navigating to first result: ${firstResultUrl}`);
 
-  // wait for '.quotes'
-  // and collect new quotes (.text, .author, .tags)
-  const quotes = await page.evaluate(() => {
-    const quotes = [];
-    document.querySelectorAll(".quote").forEach((quote) => {
-      quotes.push({
-        text: quote.querySelector(".text").textContent,
-        author: quote.querySelector(".author").textContent,
-        tags: quote.querySelector(".tags").textContent,
-      });
-    });
-    return quotes;
-  });
+    // Remove Scroll command from puppeteer
+    const formattedUrl = firstResultUrl.split("#")[0];
+    sdk.auth(diffbotApiKey);
+    sdk
+      .article({
+        url: formattedUrl,
+      })
+      .then(({ data }) => console.log(data))
+      .catch((err) => console.error(err));
 
-  // Print out the quotes
-  console.log(quotes);
+    // console.log(`Content from the site: ${content}`);
+  } else {
+    console.log("Failed to find the first result's URL.");
+  }
+
   await browser.close();
 }
 
-module.exports = scrape;
+module.exports = searchGoogle;
