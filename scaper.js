@@ -1,43 +1,53 @@
 require("dotenv").config();
 const puppeteer = require("puppeteer");
 const sdk = require("api")("@diffbot-2/v1.1#9i9y4qmlr6p26mz");
+const DiffbotSearch = require("./diffbotsearch");
 
-async function searchGoogle(query) {
-  const diffbotApiKey = process.env.DIFFBOT_API_KEY;
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
-    query
-  )}`;
+const diffSearch = new DiffbotSearch();
 
-  await page.goto(searchUrl);
-  await page.waitForSelector("#search");
+// async function searchGoogle(query) {
+const diffbotApiKey = process.env.DIFFBOT_API_KEY;
+//   const browser = await puppeteer.launch({ headless: true });
+//   const page = await browser.newPage();
+//   const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+//     query
+//   )}`;
 
-  // Extract the URL of the first search result.
-  const firstResultUrl = await page.evaluate(() => {
-    const firstResult = document.querySelector(".tF2Cxc a");
-    return firstResult ? firstResult.href : null;
-  });
+//   await page.goto(searchUrl);
+//   await page.waitForSelector("#search");
 
-  if (firstResultUrl && diffbotApiKey) {
+//   // Extract the URL of the first search result.
+//   const firstResultUrl = await page.evaluate(() => {
+//     const firstResult = document.querySelector(".tF2Cxc a");
+//     return firstResult ? firstResult.href : null;
+//   });
+
+async function searchWithDiff(query) {
+  sdk.auth(diffbotApiKey);
+  const firstResultUrl = await diffSearch.search(
+    "https://www.google.com/search?q=alexei+navalny+died+in+prison"
+  );
+
+  if (firstResultUrl) {
     console.log(`Navigating to first result: ${firstResultUrl}`);
 
+    console.log(firstResultUrl);
     // Remove Scroll command from puppeteer
-    const formattedUrl = firstResultUrl.split("#")[0];
-    sdk.auth(diffbotApiKey);
-    sdk
-      .article({
-        url: formattedUrl,
-      })
-      .then(({ data }) => console.log(data))
-      .catch((err) => console.error(err));
+    // const formattedUrl = firstResultUrl.split("#")[0];
+    // sdk.auth(diffbotApiKey);
+    // sdk
+    //   .article({
+    //     url: formattedUrl,
+    //   })
+    //   .then(({ data }) => console.log(data))
+    //   .catch((err) => console.error(err));
 
     // console.log(`Content from the site: ${content}`);
   } else {
     console.log("Failed to find the first result's URL.");
   }
 
-  await browser.close();
+  // await browser.close();
 }
 
-module.exports = searchGoogle;
+module.exports = searchWithDiff;
