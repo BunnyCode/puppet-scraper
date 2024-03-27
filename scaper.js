@@ -4,10 +4,10 @@ const DiffbotSearch = require("./diffbotsearch");
 const diffSearch = new DiffbotSearch();
 
 const diffbotApiKey = process.env.DIFFBOT_API_KEY;
-const readline = require("readline").createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+// const readline = require("readline").createInterface({
+//   input: process.stdin,
+//   output: process.stdout,
+// });
 
 async function searchWithDiff(query) {
   sdk.auth(diffbotApiKey);
@@ -16,7 +16,7 @@ async function searchWithDiff(query) {
     `https://www.google.com/search?q=${fixedQuery}`
   );
 
-  let choice = -1;
+  let choice = 0;
 
   if (firstResultUrl) {
     console.log(`Getting Results`);
@@ -28,14 +28,22 @@ async function searchWithDiff(query) {
 
     console.log(topFiveHits);
 
-    // change for GPT reply in thread. once integrating.
-    readline.question("What article", (number) => {
-      choice = number;
-      readline.close();
-    });
+    // // change for GPT reply in thread. once integrating.
+    // await readline.question("What article", (number) => {
+    //   choice = number;
+    //   readline.close();
+    // });
 
-    if (choice >= 0 <= adjustedLen) {
-      console.log(firstResultUrl.objects[0].items[choice]);
+    if (0 <= choice <= adjustedLen) {
+      const url = firstResultUrl.objects[0].items[choice].link;
+      const encodedUrl = encodeURI(url);
+      console.log("\n\n\n")
+      console.log(encodedUrl)
+      console.log("\n\n\n")
+      const article = await diffSearch.article(
+        encodedUrl
+        );
+        console.log(article);
     }
   } else {
     console.log("Failed to find the first result's URL.");

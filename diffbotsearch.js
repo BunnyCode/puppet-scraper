@@ -5,7 +5,22 @@ class DiffbotWebSearch {
   search(url) {
     sdk.auth(diffbotApiKey);
     return sdk
-      .extractAnalyze({ url })
+      .list({ url })
+      .then(({ data }) => {
+        // Extract the data returned as a variable
+        const extractedData = data;
+        return extractedData;
+      })
+      .catch((err) => {
+        console.error(err);
+        throw err;
+      });
+  }
+
+  article(url) {
+    sdk.auth(diffbotApiKey);
+    return sdk
+      .article({ url })
       .then(({ data }) => {
         // Extract the data returned as a variable
         const extractedData = data;

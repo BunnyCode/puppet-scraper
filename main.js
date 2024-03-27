@@ -1,4 +1,4 @@
 const scrape = require("./scaper");
 
-scrape("alexei navalny died in prison");
+scrape("trump is the new president of the united states");
 // scrape("somethjere");
