@@ -2,16 +2,16 @@ require("dotenv").config();
 const sdk = require("api")("@diffbot-2/v1.1#9i9y4qmlr6p26mz");
 const diffbotApiKey = process.env.DIFFBOT_API_KEY;
 class DiffbotWebSearch {
-  async search(url) {
-     url = 'https://www.google.com/search?q=biden+is+lost&scroll=slow';
-const token = diffbotApiKey;
-const apiUrl = `https://api.diffbot.com/v3/list?url=${encodeURIComponent(url)}&token=${token}`;
+  async search(query) {
+    const options = {method: 'GET', headers: {accept: 'application/json'}};
 
-fetch(apiUrl)
-  .then(response => response.json())
-  .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));
+    const urlEncoded = encodeURIComponent(query);
 
+    const response = await fetch(`https://api.diffbot.com/v3/list?url=${urlEncoded}&token=${diffbotApiKey}`, options)
+
+    const data = await response.json();
+
+    return data.objects[0].items;
   }
 
   article(url) {

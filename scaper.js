@@ -11,22 +11,28 @@ const diffbotApiKey = process.env.DIFFBOT_API_KEY;
 
 async function searchWithDiff(query) {
   sdk.auth(diffbotApiKey);
-  const fixedQuery = query.split(" ").join("+");
-  const firstResultUrl = await diffSearch.search(
-    `https://www.google.com/search?q=${fixedQuery}`
+
+  const topResultsUrl = await diffSearch.search(
+    `https://www.google.com/search?q=${query}`
   );
 
-  let choice = 0;
+  console.log('topResultsUrl', topResultsUrl);
+  // console.log('firstResultUrl', firstResultUrl);
 
-  if (firstResultUrl) {
-    console.log(`Getting Results`);
+  // let choice = 0;
 
-    console.log(firstResultUrl);
-    const arrLen = firstResultUrl.objects[0].items.length;
-    const adjustedLen = arrLen > 5 ? 5 : arrLen;
-    const topFiveHits = firstResultUrl.objects[0].items.slice(0, adjustedLen);
+  // if (firstResultUrl) {
+  //   console.log(`Getting Results`);
 
-    console.log(topFiveHits);
+  //   console.log(firstResultUrl);
+  //   const arrLen = firstResultUrl.objects[0].items.length;
+  //   const adjustedLen = arrLen > 5 ? 5 : arrLen;
+
+  const randomIndex = Math.floor(Math.random() * 5); // 0 to 4
+
+  const chosenArticle = topResultsUrl[randomIndex].link
+
+    // console.log('topFiveHits', topFiveHits);
 
     // // change for GPT reply in thread. once integrating.
     // await readline.question("What article", (number) => {
@@ -34,20 +40,22 @@ async function searchWithDiff(query) {
     //   readline.close();
     // });
 
-    if (0 <= choice <= adjustedLen) {
-      const url = firstResultUrl.objects[0].items[choice].link;
-      const encodedUrl = encodeURI(url);
-      console.log("\n\n\n")
-      console.log(encodedUrl)
-      console.log("\n\n\n")
+    // if (0 <= choice <= adjustedLen) {
+      // const url = firstResultUrl.objects[0].items[0].link;
+      // const encodedUrl = encodeURI(url);
+      // console.log("\n\n\n")
+      // console.log(encodedUrl)
+      // console.log("\n\n\n")
+
+      console.log('chosenArticle', chosenArticle);
       const article = await diffSearch.article(
-        encodedUrl
+        chosenArticle
         );
-        console.log(article);
-    }
-  } else {
-    console.log("Failed to find the first result's URL.");
-  }
+      console.log('article', article);
+  //   }
+  // } else {
+  //   console.log("Failed to find the first result's URL.");
+  // }
 
   // await browser.close();
 }
