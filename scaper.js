@@ -4,10 +4,32 @@ const DiffbotSearch = require("./diffbotsearch");
 const diffSearch = new DiffbotSearch();
 
 const diffbotApiKey = process.env.DIFFBOT_API_KEY;
-// const readline = require("readline").createInterface({
-//   input: process.stdin,
-//   output: process.stdout,
-// });
+
+async function getChoise(topResultsUrl) {
+  // return promise select number from input.
+  return new Promise((resolve, reject) => {
+    const readline = require("readline").createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    console.log("Please select a number from the following options:");
+
+    topResultsUrl.forEach((result, index) => {
+      console.log(`${index + 1}. ${result.link}`);
+    });
+
+    readline.question("Enter the number of your choice: ", (number) => {
+      readline.close();
+      const choice = parseInt(number) - 1;
+      if (choice >= 0 && choice < topResultsUrl.length) {
+        resolve(choice);
+      } else {
+        reject(new Error("Invalid choice."));
+      }
+    });
+  });
+}
 
 async function searchWithDiff(query) {
   sdk.auth(diffbotApiKey);
@@ -16,48 +38,15 @@ async function searchWithDiff(query) {
     `https://www.google.com/search?q=${query}`
   );
 
-  console.log('topResultsUrl', topResultsUrl);
-  // console.log('firstResultUrl', firstResultUrl);
+  console.log("topResultsUrl", topResultsUrl);
 
-  // let choice = 0;
+  const selectedIndex = await getChoise(topResultsUrl);
 
-  // if (firstResultUrl) {
-  //   console.log(`Getting Results`);
+  const chosenArticle = topResultsUrl[selectedIndex].link;
 
-  //   console.log(firstResultUrl);
-  //   const arrLen = firstResultUrl.objects[0].items.length;
-  //   const adjustedLen = arrLen > 5 ? 5 : arrLen;
-
-  const randomIndex = Math.floor(Math.random() * 5); // 0 to 4
-
-  const chosenArticle = topResultsUrl[randomIndex].link
-
-    // console.log('topFiveHits', topFiveHits);
-
-    // // change for GPT reply in thread. once integrating.
-    // await readline.question("What article", (number) => {
-    //   choice = number;
-    //   readline.close();
-    // });
-
-    // if (0 <= choice <= adjustedLen) {
-      // const url = firstResultUrl.objects[0].items[0].link;
-      // const encodedUrl = encodeURI(url);
-      // console.log("\n\n\n")
-      // console.log(encodedUrl)
-      // console.log("\n\n\n")
-
-      console.log('chosenArticle', chosenArticle);
-      const article = await diffSearch.article(
-        chosenArticle
-        );
-      console.log('article', article);
-  //   }
-  // } else {
-  //   console.log("Failed to find the first result's URL.");
-  // }
-
-  // await browser.close();
+  console.log("chosenArticle", chosenArticle);
+  const article = await diffSearch.article(chosenArticle);
+  console.log("article", article);
 }
 
 module.exports = searchWithDiff;
