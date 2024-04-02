@@ -16,8 +16,7 @@ async function getChoise(topResultsUrl) {
     console.log("Please select a number from the following options:");
 
     topResultsUrl.forEach((result, index) => {
-      console.log(result);
-      console.log(`${index + 1}. ${result.link}`);
+      console.log(`${index + 1}. ${result.link} - ${result.summary}`);
     });
 
     readline.question("Enter the number of your choice: ", (number) => {
